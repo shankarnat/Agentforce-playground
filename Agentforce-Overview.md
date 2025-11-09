@@ -1316,6 +1316,184 @@ Guardrails:
 **Scope:**
 "Understand the reason for escalation and the customer's issue. Your job is to seamlessly transfer the conversation to a human agent while preserving all conversation context, customer information, and issue details. Ensure the customer feels heard and knows they will receive specialized assistance. You can check agent availability, queue the customer if no agents are available, and set proper expectations for wait times."
 
+---
+
+#### **Prerequisites & Configuration: Omni-Channel Setup**
+
+The Escalation topic's standard actions are **powered by Salesforce Omni-Channel**, which must be configured before the topic can function properly.
+
+**What is Omni-Channel?**
+
+Omni-Channel is Salesforce's intelligent routing and capacity management system that:
+- **Routes work items** (chats, cases, messages) to available agents based on skills, capacity, and priority
+- **Manages agent presence** (online, away, busy) and capacity in real-time
+- **Balances workload** across agents to prevent overload
+- **Enables skill-based routing** to match work to the right expertise
+- **Supports multiple channels** (chat, messaging, phone, email, social media)
+
+**How Omni-Channel Powers Escalation Actions:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│            AGENTFORCE ESCALATION ARCHITECTURE                │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  AGENT BUILDER (Agentforce Configuration)                   │
+│  ┌──────────────────────────────────────────────┐          │
+│  │  Connections → Outbound Flow                 │          │
+│  │  Points to: Omni-Channel Routing Flow        │          │
+│  └──────────────────────────────────────────────┘          │
+│                        ▼                                     │
+│  ┌──────────────────────────────────────────────┐          │
+│  │  OMNI-CHANNEL FLOW (Autolaunched)            │          │
+│  │  ┌──────────────────────────────────────┐    │          │
+│  │  │ • Determines routing destination     │    │          │
+│  │  │ • Applies routing rules              │    │          │
+│  │  │ • Checks queue configurations        │    │          │
+│  │  │ • Assigns priority                   │    │          │
+│  │  │ • Routes to appropriate agent/queue  │    │          │
+│  │  └──────────────────────────────────────┘    │          │
+│  └──────────────────────────────────────────────┘          │
+│                        ▼                                     │
+│  ┌──────────────────────────────────────────────┐          │
+│  │  OMNI-CHANNEL ROUTING ENGINE                 │          │
+│  │  ┌──────────────────────────────────────┐    │          │
+│  │  │ • Presence Management                │    │          │
+│  │  │ • Capacity Checking                  │    │          │
+│  │  │ • Skill-Based Matching               │    │          │
+│  │  │ • Priority Queuing                   │    │          │
+│  │  │ • Load Balancing                     │    │          │
+│  │  └──────────────────────────────────────┘    │          │
+│  └──────────────────────────────────────────────┘          │
+│                        ▼                                     │
+│  ┌──────────────────────────────────────────────┐          │
+│  │  HUMAN AGENTS                                 │          │
+│  │  • Receive routed conversations               │          │
+│  │  • Get full context from AI agent             │          │
+│  │  • Handle escalated issues                    │          │
+│  └──────────────────────────────────────────────┘          │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Standard Actions Leveraging Omni-Channel:**
+
+1. **Check Rep Availability for Routing** (Standard Action)
+   - **What it does:** Queries Omni-Channel to determine if human agents are online and available
+   - **How it works:**
+     - Connects to Omni-Channel Presence API
+     - Checks agent status (Available, Busy, Away, Offline)
+     - Checks agent capacity (how many conversations they can handle)
+     - Returns availability status to the agent
+   - **Powered by:** Omni-Channel Presence Management
+
+2. **Transfer to Human Agent** (Standard Action)
+   - **What it does:** Initiates the handoff from AI agent to human agent
+   - **How it works:**
+     - Packages conversation context (history, customer details, issue summary)
+     - Triggers the configured Omni-Channel Flow
+     - Flow applies routing rules and priority
+     - Omni-Channel routes to available agent based on skills/capacity
+     - Conversation appears in agent's workspace with full context
+   - **Powered by:** Omni-Channel Routing Engine + Configured Flow
+
+**Configuration Steps Required:**
+
+To enable Escalation topic functionality, you must:
+
+1. **Enable Omni-Channel in Salesforce**
+   - Setup → Omni-Channel Settings → Enable Omni-Channel
+
+2. **Create Omni-Channel Flow** (Autolaunched Flow type)
+   - Define routing logic (which queue, which skills, priority rules)
+   - Configure work item routing
+   - Set up agent assignment rules
+
+3. **Configure Service Channels**
+   - Create channels for different communication types (chat, messaging, etc.)
+   - Define channel-specific routing
+
+4. **Set Up Queues**
+   - Create queues for different types of escalations (Returns, Billing, VIP, etc.)
+   - Assign agents to queues based on skills
+
+5. **Configure Agent Presence**
+   - Define presence statuses (Available, Busy, Away, Offline)
+   - Set capacity rules (how many concurrent conversations per agent)
+
+6. **Connect Agent to Omni-Channel**
+   - In Agent Builder → Go to agent configuration
+   - Navigate to Connections section
+   - Select "Outbound Flow"
+   - Choose your Omni-Channel routing flow
+   - This enables "Transfer to Human Agent" and "Check Rep Availability" actions
+
+**Example Omni-Channel Flow Configuration:**
+
+```yaml
+Omni-Channel Routing Flow:
+  Name: "Agentforce Escalation Routing"
+  Type: Autolaunched Flow
+
+  Inputs:
+    - Conversation ID
+    - Customer Information
+    - Escalation Reason
+    - Priority Level
+    - Recommended Skills
+
+  Logic:
+    Decision 1: Check Priority
+      IF priority == "URGENT"
+        THEN route to: "Urgent Support Queue"
+             set capacity weight: 10
+      ELSE IF priority == "HIGH"
+        THEN route to: "Priority Queue"
+             set capacity weight: 5
+      ELSE
+        THEN route to: "Standard Queue"
+             set capacity weight: 2
+
+    Decision 2: Skill-Based Routing
+      IF escalation_reason contains "billing"
+        THEN require skill: "Billing Expert"
+      ELSE IF escalation_reason contains "technical"
+        THEN require skill: "Technical Support"
+      ELSE IF escalation_reason contains "returns"
+        THEN require skill: "Returns Specialist"
+
+    Decision 3: VIP Routing
+      IF customer.tier == "VIP"
+        THEN route to: "VIP Support Queue"
+             notify: VIP supervisor
+
+  Output:
+    - Route to appropriate queue
+    - Assign to available agent with required skills
+    - Pass conversation context to agent's workspace
+```
+
+**Benefits of Omni-Channel Integration:**
+
+✅ **Intelligent Routing:** Right issue to right agent based on skills
+✅ **Load Balancing:** Distributes work evenly across available agents
+✅ **Priority Management:** Urgent issues get immediate attention
+✅ **Context Preservation:** Full conversation history transferred seamlessly
+✅ **Real-Time Availability:** AI agent knows if human agents are available
+✅ **Queue Management:** Customers can wait in queue if no agents available
+✅ **Multi-Channel Support:** Works across chat, messaging, email, social media
+
+**Alternative Without Omni-Channel:**
+
+If you don't use Omni-Channel, you can implement escalation with custom actions:
+- Custom Flow Action: "Add to Escalation Queue" (directly adds to a Salesforce Queue)
+- Custom Flow Action: "Create Priority Case" (creates case and assigns to queue)
+- Custom Apex Action: "Custom Routing Logic" (programmatic routing to specific users/queues)
+
+However, you lose the intelligent routing, capacity management, and real-time availability features.
+
+---
+
 **Instructions:**
 ```
 STEP 1: Acknowledge Escalation Need
