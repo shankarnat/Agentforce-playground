@@ -157,6 +157,11 @@ Agentforce provides standard topics for common use cases across different domain
 - **General FAQs**: Answer frequently asked questions
 - **Reservation Management**: Handle bookings, modifications, and cancellations
 - **Billing Support**: Resolve routine billing questions
+- **Escalation**: Handle agent-to-human transfers when customers request to speak with a human agent
+  - Includes classification description to determine when to escalate
+  - Manages handoff process from AI to human agents
+  - Transfers conversation context seamlessly to live agents
+  - Triggers based on complexity threshold, sensitive topics, or customer requests
 
 #### Sales Topics
 - **Lead Qualification**: Assess and qualify potential leads
@@ -175,6 +180,22 @@ Agentforce provides standard topics for common use cases across different domain
 - **Audience Segmentation**: Create and manage target audience segments
 - **Customer Journey Design**: Map and optimize customer experiences
 
+#### Universal/Platform Topics (Agentforce 2.0)
+- **Fallback**: Captures and handles queries not covered by specific topics
+  - Ensures users get answers from Salesforce documentation when no direct topic match is found
+  - Prevents dead ends in conversations
+  - Provides graceful handling of unexpected queries
+  - New feature in Agentforce 2.0
+
+- **Object Management**: Empowers admins to quickly identify objects and fields
+  - Saves time when making configuration changes
+  - Helps troubleshoot data issues
+  - Provides insights into Salesforce data structure
+  - New feature in Agentforce 2.0
+
+#### Field Service Topics
+- **Field Service Dispatcher Actions**: Manage field service operations and dispatch workflows
+
 ### Custom Topics
 
 Organizations can create custom topics to address specific business needs beyond the standard offerings.
@@ -189,7 +210,7 @@ Actions define the specific tasks an agent can perform based on the selected top
 
 ### Standard Actions
 
-Agentforce provides out-of-the-box standard actions for common tasks:
+Agentforce provides approximately 30 out-of-the-box standard actions for common tasks:
 
 #### Knowledge & Information
 - **Answer Questions with Knowledge**: Leverages Salesforce Data Cloud to search and retrieve knowledge articles
@@ -200,9 +221,13 @@ Agentforce provides out-of-the-box standard actions for common tasks:
 - **Query Records**: Search and retrieve records from Salesforce
 - **Query Records with Aggregate**: Perform data aggregation tasks
 - **Identify a Record**: Locate specific records based on criteria
+- **Identify Object**: Identify Salesforce objects and their properties
+- **Create Record**: Create new records in Salesforce (available via Flow actions)
+- **Update Record**: Update existing records and their custom fields
 
 #### Communication & Documentation
 - **Draft an Email**: Create email content
+- **Draft or Revise Email**: Create or modify email content
 - **Write a Sales Email**: Generate personalized sales emails
 - **Draft a Case Response**: Prepare responses for customer cases
 - **Log a Call**: Record call details and outcomes
@@ -211,6 +236,13 @@ Agentforce provides out-of-the-box standard actions for common tasks:
 - **Summarize a Record**: Create summaries of record information
 - **Summarize Record**: Generate record overviews
 - **Create Case**: Generate new support cases
+- **Get Activities Timeline**: Retrieve timeline of activities related to records
+
+#### Routing & Escalation
+- **Check Rep Availability for Routing**: Verify agent availability for escalation and routing
+- **Transfer to Human Agent**: Handle handoff from AI agent to human representative
+
+**Important Note:** There is NO standard Delete Record action in Agentforce. If deletion functionality is required, you must create a custom action using Flow or Apex.
 
 ### Custom Actions
 
@@ -352,11 +384,44 @@ Prompt templates can be invoked from:
 
 4. **User Feedback**: Collect and incorporate feedback from human users and customers
 
-### 2025 Updates and Features
+### Agentforce 2.0 Updates and Features
 
+#### Coming February 2025
 - **Enhanced Reasoning**: Generally available February 2025
 - **Improved RAG (Retrieval-Augmented Generation)**: Generally available February 2025
-- **Agentforce 2.0**: Latest platform updates with expanded capabilities
+
+#### Agentforce 2.0 Key Features
+
+**Natural Language Agent Creation**
+- Agent Builder uses Agentforce to compose new agents automatically
+- Auto-generates relevant topics and instructions based on natural language descriptions
+- Simplifies agent creation process for non-technical users
+
+**Agent Versions**
+- Create test versions of agents before deployment
+- Verify that all new actions and topics work as intended
+- Safe testing environment without affecting production agents
+- Version control and rollback capabilities
+
+**MuleSoft API Catalog Integration**
+- View, discover, and manage APIs from one central location
+- Access APIs across Salesforce, MuleSoft, Heroku, and external services
+- Simplified integration with external systems
+- Unified API management
+
+**Pre-Built Agent Skills**
+- Library of ready-to-use agent skills
+- Skills available for:
+  - CRM operations
+  - Slack integrations
+  - Tableau analytics
+  - Partner-developed skills on AppExchange
+- Accelerates agent deployment and customization
+
+**New Standard Topics**
+- Fallback Topic for handling unmatched queries
+- Object Management Topic for admin operations
+- Field Service Dispatcher Actions
 
 ---
 
@@ -397,6 +462,18 @@ Prompt templates can be invoked from:
 - Audience segment creation
 - Marketing content development
 - Customer journey optimization
+
+### Escalation and Agent-to-Human Handoff
+- Seamless transfer of conversations from AI to human agents
+- Context preservation during handoff
+- Triggers include:
+  - Complex or sensitive topics (billing disputes, cancellations)
+  - Keyword detection ("talk to a person", "human agent")
+  - Tone, intent, and emotion analysis
+  - Customer dissatisfaction indicators
+- Real-time context capture powered by NLP and machine learning
+- Omni-Channel flow integration for routing to available agents
+- Complexity threshold recognition for automatic escalation
 
 ---
 
@@ -463,16 +540,29 @@ Agentforce represents a significant evolution in AI-powered business automation,
 
 **Key Takeaways:**
 - **7 Standard Agent Types** plus custom agent capabilities
-- **Standard Topics** for common use cases across sales, service, commerce, and marketing
-- **Standard and Custom Actions** to extend agent capabilities
+- **30+ Standard Actions** including query, create, update, summarize, and routing capabilities
+- **Standard Topics** for sales, service, commerce, marketing, and platform operations
+- **Critical Topics**: Escalation for agent-to-human handoff, Fallback for unmatched queries, Object Management for admin tasks
 - **Three Custom Action Types**: Flow, Apex, and Prompt Templates
+- **No Delete Action**: Must create custom action for record deletion
 - **Best Practice**: Maximum 15 actions per topic
+- **Agentforce 2.0 Features**: Natural language agent creation, Agent Versions, MuleSoft API Catalog, pre-built skills
 - **2025 Updates**: Enhanced reasoning and RAG capabilities coming in February
 
 By leveraging Agentforce's comprehensive agent types, topics, and actions, organizations can scale their operations, improve customer experiences, and automate complex business processes with autonomous AI agents.
 
 ---
 
-**Document Version:** 1.0
+**Document Version:** 2.0
 **Last Updated:** January 2025
 **Sources:** Salesforce Official Documentation, Trailhead, Salesforce Community
+
+**Version 2.0 Updates:**
+- Added Escalation topic with agent-to-human handoff details
+- Added Universal/Platform topics: Fallback and Object Management
+- Added Field Service Dispatcher Actions topic
+- Expanded standard actions list to 30+ with new categories for Routing & Escalation
+- Added missing actions: Create Record, Update Record, Identify Object, Get Activities Timeline, Draft or Revise Email, Check Rep Availability for Routing
+- Documented important limitation: No standard Delete Record action
+- Expanded Agentforce 2.0 features: Natural language agent creation, Agent Versions, MuleSoft API Catalog, Pre-built agent skills
+- Added dedicated section for Escalation and Agent-to-Human Handoff use cases
